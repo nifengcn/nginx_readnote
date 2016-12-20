@@ -1,2 +1,5 @@
 .DS_Store
 /tags
+/Makefile
+/run/
+/objs/
