@@ -676,6 +676,20 @@ ngx_kqueue_process_events(ngx_cycle_t *cycle, ngx_msec_t timer,
 static ngx_inline void
 ngx_kqueue_dump_event(ngx_log_t *log, struct kevent *kev)
 {
+	/*add by nifeng01:begin*/
+	/*macro ngx_log_error_core_more*/
+	if (kev->ident > 0x8000000 && kev->ident != (unsigned) -1) {
+		ngx_log_debug6(NGX_LOG_DEBUG_EVENT, log, 0, "kevent: %p: ft:%d fl:%04Xd ff:%08Xd d:%d ud:%p",
+    	                kev->ident, kev->filter,
+    	                kev->flags, kev->fflags,
+    	                kev->data, kev->udata);
+	} else {
+		ngx_log_debug6(NGX_LOG_DEBUG_EVENT, log, 0, "kevent: %d: ft:%d fl:%04Xd ff:%08Xd d:%d ud:%p",
+    	                kev->ident, kev->filter,
+    	                kev->flags, kev->fflags,
+    	                kev->data, kev->udata);
+	}
+	/*
     ngx_log_debug6(NGX_LOG_DEBUG_EVENT, log, 0,
                    (kev->ident > 0x8000000 && kev->ident != (unsigned) -1) ?
                     "kevent: %p: ft:%d fl:%04Xd ff:%08Xd d:%d ud:%p":
@@ -683,6 +697,8 @@ ngx_kqueue_dump_event(ngx_log_t *log, struct kevent *kev)
                     kev->ident, kev->filter,
                     kev->flags, kev->fflags,
                     kev->data, kev->udata);
+					*/
+	/*add by nifeng01:end*/
 }
 
 

@@ -88,9 +88,15 @@ struct ngx_log_s {
 void ngx_log_error_core(ngx_uint_t level, ngx_log_t *log, ngx_err_t err,
     const char *fmt, ...);
 
+/*add by nifeng01:begin*/
+/*add __FILE__,__FUNCTION__, __LINE__*/
+#define ngx_log_error_core_more(level, log, err, fmt, ...) \
+	ngx_log_error_core(level, log, err, "[%s:%s:%d] " fmt, __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
+/*add by nifeng01:end*/
+
 #define ngx_log_debug(level, log, ...)                                        \
     if ((log)->log_level & level)                                             \
-        ngx_log_error_core(NGX_LOG_DEBUG, log, __VA_ARGS__)
+        ngx_log_error_core_more(NGX_LOG_DEBUG, log, __VA_ARGS__)
 
 /*********************************/
 
