@@ -35,7 +35,7 @@ struct ngx_shm_zone_s {
 
 
 struct ngx_cycle_s {
-    void                  ****conf_ctx;
+    void                  ****conf_ctx; /*配置上下文数组*/
     ngx_pool_t               *pool;
 
     ngx_log_t                *log;
@@ -51,8 +51,8 @@ struct ngx_cycle_s {
 
     ngx_array_t               listening;
     ngx_array_t               paths;
-    ngx_list_t                open_files;
-    ngx_list_t                shared_memory;
+    ngx_list_t                open_files;   /*打开的文件*/
+    ngx_list_t                shared_memory;    /*共享内存链表*/
 
     ngx_uint_t                connection_n;
     ngx_uint_t                files_n;

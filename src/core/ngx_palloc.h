@@ -47,10 +47,10 @@ struct ngx_pool_large_s {
 
 
 typedef struct {
-    u_char               *last;
-    u_char               *end;
-    ngx_pool_t           *next;
-    ngx_uint_t            failed;
+    u_char               *last; /*已使用空间的尾部地址*/
+    u_char               *end;  /*尾部边界*/
+    ngx_pool_t           *next; /*下一个pool的地址*/
+    ngx_uint_t            failed;   /*避免链表过长标记*/
 } ngx_pool_data_t;
 
 
@@ -59,7 +59,7 @@ struct ngx_pool_s {
     size_t                max;
     ngx_pool_t           *current;
     ngx_chain_t          *chain;
-    ngx_pool_large_t     *large;
+    ngx_pool_large_t     *large;    /*指向大块内存链表*/
     ngx_pool_cleanup_t   *cleanup;
     ngx_log_t            *log;
 };

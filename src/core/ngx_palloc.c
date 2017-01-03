@@ -201,6 +201,7 @@ ngx_palloc_block(ngx_pool_t *pool, size_t size)
     new->d.last = m + size;
 
     for (p = pool->current; p->d.next; p = p->d.next) {
+        /*避免链表过长导致遍历成本过高*/
         if (p->d.failed++ > 4) {
             pool->current = p->d.next;
         }
@@ -232,6 +233,7 @@ ngx_palloc_large(ngx_pool_t *pool, size_t size)
             return p;
         }
 
+        /*避免遍历单链表*/
         if (n++ > 3) {
             break;
         }

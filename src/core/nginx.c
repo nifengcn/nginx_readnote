@@ -206,12 +206,15 @@ main(int argc, char *const *argv)
     ngx_cycle_t      *cycle, init_cycle;
     ngx_core_conf_t  *ccf;
 
+    /*设置全局flag:ngx_debug_malloc*/
     ngx_debug_init();
 
+    /*将errorno和errmsg填充到ngx_sys_errlist中*/
     if (ngx_strerror_init() != NGX_OK) {
         return 1;
     }
 
+    /*解析argv参数，设置相关的全局flag*/
     if (ngx_get_options(argc, argv) != NGX_OK) {
         return 1;
     }
@@ -289,6 +292,7 @@ main(int argc, char *const *argv)
 
     ngx_pid = ngx_getpid();
 
+    /*指定ngx_log_t对应的文件句柄*/
     log = ngx_log_init(ngx_prefix);
     if (log == NULL) {
         return 1;
@@ -313,14 +317,17 @@ main(int argc, char *const *argv)
         return 1;
     }
 
+    /*拷贝argc,argv至ngx_argc,ngx_argv,仅用到了init_cycle.log*/
     if (ngx_save_argv(&init_cycle, argc, argv) != NGX_OK) {
         return 1;
     }
 
+    /*将配置文件目录等信息填充到init_cycle中*/
     if (ngx_process_options(&init_cycle) != NGX_OK) {
         return 1;
     }
 
+    /*系统相关参数，tbd*/
     if (ngx_os_init(log) != NGX_OK) {
         return 1;
     }
@@ -329,10 +336,14 @@ main(int argc, char *const *argv)
      * ngx_crc32_table_init() requires ngx_cacheline_size set in ngx_os_init()
      */
 
+    /*cacheline 可简单理解为CPU Cache中的最小缓存单位,待访问的数据在同一cachline内时可大幅提升性能*/
+
+    /*根据cacheline_size优化ngx_crc32_table16内存位置*/
     if (ngx_crc32_table_init() != NGX_OK) {
         return 1;
     }
 
+    /*根据环境变量继承一些属性，tbd*/
     if (ngx_add_inherited_sockets(&init_cycle) != NGX_OK) {
         return 1;
     }
@@ -342,6 +353,7 @@ main(int argc, char *const *argv)
         ngx_modules[i]->index = ngx_max_module++;
     }
 
+    /*核心结构体ngx_cycle_t初始化*/
     cycle = ngx_init_cycle(&init_cycle);
     if (cycle == NULL) {
         if (ngx_test_config) {
@@ -361,10 +373,12 @@ main(int argc, char *const *argv)
         return 0;
     }
 
+    /*如果是发送信号的命令，则发送对应的信号给daemon进程*/
     if (ngx_signal) {
         return ngx_signal_process(cycle, ngx_signal);
     }
 
+    /*打印系统、编译等日志信息*/
     ngx_os_status(cycle->log);
 
     ngx_cycle = cycle;
@@ -377,11 +391,13 @@ main(int argc, char *const *argv)
 
 #if !(NGX_WIN32)
 
+    /*注册信号处理函数，handler函数中并不执行真实操作，而设置各种全局flag*/
     if (ngx_init_signals(cycle->log) != NGX_OK) {
         return 1;
     }
 
     if (!ngx_inherited && ccf->daemon) {
+        /*通过创建子进程，父进程退出的方法实现守护进程*/
         if (ngx_daemon(cycle->log) != NGX_OK) {
             return 1;
         }

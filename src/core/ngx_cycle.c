@@ -67,6 +67,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
 
     log = old_cycle->log;
 
+    /*创建内存池*/
     pool = ngx_create_pool(NGX_CYCLE_POOL_SIZE, log);
     if (pool == NULL) {
         return NULL;
@@ -83,6 +84,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
     cycle->log = log;
     cycle->old_cycle = old_cycle;
 
+    /*拷贝配置前缀*/
     cycle->conf_prefix.len = old_cycle->conf_prefix.len;
     cycle->conf_prefix.data = ngx_pstrdup(pool, &old_cycle->conf_prefix);
     if (cycle->conf_prefix.data == NULL) {
@@ -138,6 +140,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
         n = 20;
     }
 
+    /*初始化打开的文件句柄*/
     if (ngx_list_init(&cycle->open_files, pool, n, sizeof(ngx_open_file_t))
         != NGX_OK)
     {
@@ -157,6 +160,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
         n = 1;
     }
 
+    /*初始化shared_memory链表*/
     if (ngx_list_init(&cycle->shared_memory, pool, n, sizeof(ngx_shm_zone_t))
         != NGX_OK)
     {
@@ -181,6 +185,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
     ngx_queue_init(&cycle->reusable_connections_queue);
 
 
+    /*核心配置文件初始化*/
     cycle->conf_ctx = ngx_pcalloc(pool, ngx_max_module * sizeof(void *));
     if (cycle->conf_ctx == NULL) {
         ngx_destroy_pool(pool);
@@ -208,6 +213,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
     ngx_strlow(cycle->hostname.data, (u_char *) hostname, cycle->hostname.len);
 
 
+    /*核心模块配置文件创建*/
     for (i = 0; ngx_modules[i]; i++) {
         if (ngx_modules[i]->type != NGX_CORE_MODULE) {
             continue;
@@ -229,6 +235,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
     senv = environ;
 
 
+    /*配置文件nginx.conf解析*/
     ngx_memzero(&conf, sizeof(ngx_conf_t));
     /* STUB: init array ? */
     conf.args = ngx_array_create(pool, 10, sizeof(ngx_str_t));
@@ -261,6 +268,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
         return NULL;
     }
 
+    /*tbd*/
     if (ngx_conf_parse(&conf, &cycle->conf_file) != NGX_CONF_OK) {
         environ = senv;
         ngx_destroy_cycle_pools(&conf);
@@ -272,6 +280,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
                        cycle->conf_file.data);
     }
 
+    /*核心模块配置文件创建*/
     for (i = 0; ngx_modules[i]; i++) {
         if (ngx_modules[i]->type != NGX_CORE_MODULE) {
             continue;
@@ -290,6 +299,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
         }
     }
 
+    /*信号处理相关则在此返回*/
     if (ngx_process == NGX_PROCESS_SIGNALLER) {
         return cycle;
     }
@@ -335,6 +345,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
     }
 
 
+    /*打开日志，并调用ngx_conf_open_file方法，会将打开的文件放到cycle->open_files链表中，主要是日志文件和配置文件*/
     if (ngx_log_open_default(cycle) != NGX_OK) {
         goto failed;
     }
