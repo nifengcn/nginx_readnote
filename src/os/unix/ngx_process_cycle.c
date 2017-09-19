@@ -68,6 +68,7 @@ static ngx_log_t        ngx_exit_log;
 static ngx_open_file_t  ngx_exit_log_file;
 
 
+/*多进程模式*/
 void
 ngx_master_process_cycle(ngx_cycle_t *cycle)
 {
@@ -83,6 +84,7 @@ ngx_master_process_cycle(ngx_cycle_t *cycle)
     ngx_listening_t   *ls;
     ngx_core_conf_t   *ccf;
 
+	/*设置需要处理的信号*/
     sigemptyset(&set);
     sigaddset(&set, SIGCHLD);
     sigaddset(&set, SIGALRM);
@@ -95,6 +97,7 @@ ngx_master_process_cycle(ngx_cycle_t *cycle)
     sigaddset(&set, ngx_signal_value(NGX_SHUTDOWN_SIGNAL));
     sigaddset(&set, ngx_signal_value(NGX_CHANGEBIN_SIGNAL));
 
+	/* 将上述信号添加至进程阻塞集中 */
     if (sigprocmask(SIG_BLOCK, &set, NULL) == -1) {
         ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_errno,
                       "sigprocmask() failed");
@@ -126,8 +129,10 @@ ngx_master_process_cycle(ngx_cycle_t *cycle)
 
     ccf = (ngx_core_conf_t *) ngx_get_conf(cycle->conf_ctx, ngx_core_module);
 
+	/* 创建指定数目的worker进程, 类型为NGX_PROCESS_RESPAWN */
     ngx_start_worker_processes(cycle, ccf->worker_processes,
                                NGX_PROCESS_RESPAWN);
+	/* 启动文件cache管理进程 */
     ngx_start_cache_manager_processes(cycle, 0);
 
     ngx_new_binary = 0;
@@ -135,6 +140,7 @@ ngx_master_process_cycle(ngx_cycle_t *cycle)
     sigio = 0;
     live = 1;
 
+	/* 进入主循环，检测到来的信号，根据信号处理worker进程 */
     for ( ;; ) {
         if (delay) {
             if (ngx_sigalrm) {
@@ -283,6 +289,7 @@ ngx_master_process_cycle(ngx_cycle_t *cycle)
 }
 
 
+/*单进程模式*/
 void
 ngx_single_process_cycle(ngx_cycle_t *cycle)
 {
@@ -722,6 +729,7 @@ ngx_master_process_exit(ngx_cycle_t *cycle)
 }
 
 
+/* master-worker方式中进入主循环，接受请求并处理 */
 static void
 ngx_worker_process_cycle(ngx_cycle_t *cycle, void *data)
 {

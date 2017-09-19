@@ -16,6 +16,7 @@
 #define NGX_HTTP_REALIP_PROXY    3
 
 
+/*KEY_CONTENT:模块配置结构体*/
 typedef struct {
     ngx_array_t       *from;     /* array of ngx_cidr_t */
     ngx_uint_t         type;
@@ -46,11 +47,12 @@ static char *ngx_http_realip_merge_loc_conf(ngx_conf_t *cf,
 static ngx_int_t ngx_http_realip_init(ngx_conf_t *cf);
 
 
+/*KEY_CONTENT:模块配置指令*/
 static ngx_command_t  ngx_http_realip_commands[] = {
 
     { ngx_string("set_real_ip_from"),
       NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
-      ngx_http_realip_from,
+      ngx_http_realip_from, /*配置读取回调函数*/
       NGX_HTTP_LOC_CONF_OFFSET,
       0,
       NULL },
@@ -74,6 +76,7 @@ static ngx_command_t  ngx_http_realip_commands[] = {
 
 
 
+/*KEY_CONTENT:模块上下文结构*/
 static ngx_http_module_t  ngx_http_realip_module_ctx = {
     NULL,                                  /* preconfiguration */
     ngx_http_realip_init,                  /* postconfiguration */
@@ -89,6 +92,7 @@ static ngx_http_module_t  ngx_http_realip_module_ctx = {
 };
 
 
+/*KEY_CONTENT:模块定义*/
 ngx_module_t  ngx_http_realip_module = {
     NGX_MODULE_V1,
     &ngx_http_realip_module_ctx,           /* module context */

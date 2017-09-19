@@ -198,6 +198,13 @@ static char        *ngx_signal;
 static char **ngx_os_environ;
 
 
+/*
+ * 不考虑nginx单进程工作情况，nginx包含3种启动方式:
+ * 1) 启动新nginx
+ * 2) reload配置
+ * 3) 热替换nginx代码
+ *
+ * */
 int ngx_cdecl
 main(int argc, char *const *argv)
 {
